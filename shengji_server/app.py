@@ -284,37 +284,5 @@ def on_get_points():
         emit("update_points", {"cards": game.stacks["points"].image_names_to_csv(), "points": points}, broadcast=True)
 
 
-@socketio.on("save_final_state")
-def on_save_final(custom_save_value):
-    if "player" not in session:
-        emit("warning_player_selection")
-    else:
-        to_be_saved = game.to_be_saved
-        to_be_saved += custom_save_value
-        with open("data.txt", "a+") as f:
-            f.write(to_be_saved + "\n")
-        game.to_be_saved = ""
-
-
-@socketio.on("no_trump_save")
-def no_trump_save():
-    if "player" not in session:
-        emit("warning_player_selection")
-    else:
-        to_be_saved = game.to_be_saved
-        to_be_saved += custom_save_value
-        with open("data.txt", "a+") as f:
-            f.write(to_be_saved + "\n")
-        game.to_be_saved = ""
-
-
-@socketio.on("reset_save")
-def on_reset_save():
-    if "player" not in session:
-        emit("warning_player_selection")
-    else:
-        game.to_be_saved = ""
-
-
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0", port=80)

@@ -51,6 +51,7 @@ class Card:
         
         return self.get_ordered_rank() + self.get_suit() * 40 + ((self.get_suit() - trump_suit) % 2) * 1000
 
+
 class Deck:
     def __init__(self, num_of_decks = 1, shuffle = True, jokers = True):
         self.cards = []
@@ -79,6 +80,7 @@ class Deck:
         for card in self.cards:
             card.sorting_rank = card.assign_rank(trump_suit, trump_rank)
 
+
 class Game:
     def __init__(self, stacks):
         self.to_be_saved = ''
@@ -103,6 +105,7 @@ class Game:
 
     def set_trump_rank(self, trump_rank):
         self.trump_rank = trump_rank
+
 
 class Stack:
     def __init__(self, *args):
