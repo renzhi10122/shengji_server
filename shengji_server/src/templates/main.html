@@ -1,0 +1,334 @@
+{% extends "bootstrap/base.html" %}
+<html>
+{% block styles %}
+{{super()}}
+<link rel="stylesheet"
+      href="{{url_for('static', filename='styles.css')}}" />
+{% endblock %}
+{% block body %}
+	{% block content %}
+	<div class="container">
+		<div class="row">
+			<button onclick="shuffleDeck()">Recall and shuffle</button>
+			<button onclick="becomePlayer(0)">1</button>
+			<button onclick="becomePlayer(1)">2</button>
+			<button onclick="becomePlayer(2)">3</button>
+			<button onclick="becomePlayer(3)">4</button>
+			<span id="player_num"> You are player {{player}} </span>
+		</div>
+	</div>
+
+	<div class="container" style="min-height: 100px;">
+		<div class="col-lg-5" style="background-color: #eee;">
+			<div class="row">
+				<div class="col-lg-6" id="deck">
+					<input type="image" value="" class="button card" onclick="intoHand()" src="static/back.png" />
+					{{num_cards_left}}
+					{{num_cards_left % 4}}
+				</div>
+				<div class="col-lg-6" id="bottom-cards">
+					<input type="image" value="" class="button card" onclick="" src="static/back.png" style="opacity:0.0;"/>
+					0
+					<button onclick="revealBottom()">Reveal</button>
+				</div>
+			</div>
+			<div class="row">
+				<button onclick="trumpSuit(0)"><span style="color:red">&#9829</span></button>
+				<button onclick="trumpSuit(1)"><span style="color:red">&#9830</span></button>
+				<button onclick="trumpSuit(2)">&#9827</button>
+				<button onclick="trumpSuit(3)">&#9824</button>
+			</div>
+			<div class="row">
+				<button onclick="trumpRank(2)">2</button>
+				<button onclick="trumpRank(3)">3</button>
+				<button onclick="trumpRank(4)">4</button>
+				<button onclick="trumpRank(5)">5</button>
+				<button onclick="trumpRank(6)">6</button>
+				<button onclick="trumpRank(7)">7</button>
+				<button onclick="trumpRank(8)">8</button>
+				<button onclick="trumpRank(9)">9</button>
+				<button onclick="trumpRank(10)">10</button>
+				<button onclick="trumpRank(11)">J</button>
+				<button onclick="trumpRank(12)">Q</button>
+				<button onclick="trumpRank(13)">K</button>
+				<button onclick="trumpRank(1)">A</button>
+			</div>
+			<div class="row">
+				<div id="num-points"><button onclick="getPoints()">Get points</button>0</div>
+			</div>
+			<div class="row" id="points">
+				<input type="image" value="" class="button card" onclick="" src="static/back.png" style="opacity:0.0;"/>
+			</div>
+		</div>
+		<div class="col-lg-7 field" style="background-color: #ddd;">
+			<div id="player-top">
+			</div>
+			<div id="player-left">
+			</div>
+			<div id="player-bottom">
+			</div>
+			<div id="player-right">
+			</div>
+			<div id="played-top">
+			</div>
+			<div id="played-left">
+			</div>
+			<div id="played-bottom">
+			</div>
+			<div id="played-right">
+			</div>
+			<div id="reveal-bottom">
+			</div>
+		</div>
+	</div>
+
+	<div class="container" style="background-color: #eee;">
+		<div class="row">
+			<div class="col-lg-7">
+				<button onclick="playCards()">Play</button>
+				<button onclick="putBottom()">Bottom</button>
+				<span id="num_cards_hand">0</span>
+			</div>
+			<div class="col-lg-5">
+				<button onclick="noTrump()">N</button>
+				<button onclick="saveFinalState()">Save</button>
+				<input type="text" id="custom_save_value">
+				<button onclick="resetSave()">Reset</button>
+			</div>
+		</div>
+		<div class="row" id="hand">
+		</div>
+	</div>
+	{% endblock %}
+	{% block scripts %}
+
+	<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+	<script type="text/javascript" charset="utf-8">
+	var socket = io.connect('http://' + document.domain + ':' + location.port);
+	var player = -1;
+	// verify our websocket connection is established
+	socket.on('connect', function() {
+		console.log('Websocket connected!');
+	});
+	socket.on('update_deck', function(num_cards_left) {
+		if (num_cards_left > 0) {
+			document.getElementById('deck').innerHTML = "<input type='image' value='' class='button card' onclick='intoHand()' src='static/back.png' />\n";
+		} 
+		else {
+			document.getElementById('deck').innerHTML = "<input type='image' value='' class='card' src='static/back.png' style='opacity:0.0;' />\n";
+		}
+		document.getElementById('deck').innerHTML += num_cards_left + '\n';
+		document.getElementById('deck').innerHTML += num_cards_left % 4;
+	});
+	socket.on('update_hand', function(json) {
+		var cards_in_hand = json['hand'].split(',');
+		var selected_cards = json['selected'].split(',');
+		var highlight = json['highlight'];
+		if (cards_in_hand[0] == "") {
+			cards_in_hand = [];
+			selected_cards = [];
+		}
+		document.getElementById('num_cards_hand').innerHTML = cards_in_hand.length;
+		document.getElementById('hand').innerHTML = '';
+		for (var i = 0; i < cards_in_hand.length; i++) {
+			if (highlight == i) {
+ 				document.getElementById('hand').innerHTML += "<input type='image' value='' class='button card face_up_card' onclick='selectCard(" + i + ")' src='" + cards_in_hand[i] + "' style='left:" + (i * 25) + "px;bottom:" + selected_cards[i] + "px;box-shadow: 0px 0px 10px 5px #0ff'/>\n";
+			}
+			else {
+ 				document.getElementById('hand').innerHTML += "<input type='image' value='' class='button card face_up_card' onclick='selectCard(" + i + ")' src='" + cards_in_hand[i] + "' style='left:" + (i * 25) + "px;bottom:" + selected_cards[i] + "px;'/>\n";
+			}
+		} 
+	});
+	socket.on('update_field', function(json) {
+		var changed_player = json['changed_player'];
+		var played = json['played'].split(',');
+		if (played[0] == "") {
+			played = [];
+		}
+		var past = json['past'];
+		var id = '';
+		var id1 = '';
+		switch((changed_player - player + 4) % 4) {
+			case 0:
+			    id = 'player-bottom';
+			    id1 = 'played-bottom';
+			    break;
+			case 1:
+			    id = 'player-right';
+			    id1 = 'played-right';
+			    break;
+			case 2:
+			    id = 'player-top';
+			    id1 = 'played-top';
+			    break;
+			case 3:
+			    id = 'player-left';
+			    id1 = 'played-left';
+			    break;
+			default:
+			    console.log('Error, player number on update of field');
+			    console.log(changed_player);
+			    console.log(player);
+		}
+		if (past == '') {
+			document.getElementById(id).innerHTML = '';
+		}
+		else  {
+			document.getElementById(id).innerHTML = "<input type='image' value='' class='button card face_up_card' onclick='fromField(" + changed_player + ")' src='" + past + "' />";
+		}
+		var i;
+		if ((changed_player - player + 4) % 4 == 0) {
+			for (i = 0; i < played.length; i++) {
+				document.getElementById(id).innerHTML += "<input type='image' value='' class='button card face_up_card' onclick='backIntoHand(" + i + ")' src='" + played[i] + "' style='left:" + (i * 25) + "px'/>\n";
+			}
+		}
+		else {
+			for (i = 0; i < played.length; i++) {
+				document.getElementById(id).innerHTML += "<input type='image' value='' class='button card face_up_card' onclick='' src='" + played[i] + "' style='left:" + (i * 25) + "px'/>\n";
+			}
+		}
+
+		if (json['new'] == 'true') {
+			document.getElementById('played-top').innerHTML = '';
+			document.getElementById('played-left').innerHTML = '';
+			document.getElementById('played-bottom').innerHTML = '';
+			document.getElementById('played-right').innerHTML = '';
+			document.getElementById(id1).innerHTML = '&#9981';
+		}
+	});
+	socket.on('update_bottom', function(num_cards) {
+		if (num_cards > 0) {
+			document.getElementById('bottom-cards').innerHTML = "<input type='image' value='' class='button card' onclick='intoHandFromBottom()' src='static/back.png' />\n";
+		} 
+		else {
+			document.getElementById('bottom-cards').innerHTML = "<input type='image' value='' class='card' src='static/back.png' style='opacity:0.0;' />\n";
+		}
+		document.getElementById('bottom-cards').innerHTML += num_cards;
+		document.getElementById('bottom-cards').innerHTML += "\n<button onclick='revealBottom()'>Reveal</button>";
+	});
+	socket.on('warning_player_selection', function() {
+		alert("Please select a player to become");
+	});
+	socket.on('player_selected', function(p) {
+		document.getElementById('player_num').innerHTML = "You are player " + String(p + 1);
+		player = p;
+		console.log(player);
+	});
+	socket.on('update_reveal_bottom', function(s) {
+		var cards = s.split(',');
+		if (cards[0] == "") {
+			cards = [];
+		}
+		document.getElementById('reveal-bottom').innerHTML = '';
+		var i;
+		for (i = 0; i < cards.length; i++) {
+			document.getElementById('reveal-bottom').innerHTML += "<input type='image' value='' class='button card face_up_card' onclick='' src='" + cards[i] + "' style='left:" + (i * 25) + "px'/>\n";
+		}
+	});
+	socket.on('update_points', function(json) {
+		var cards = json['cards'].split(',');
+		if (cards[0] == "") {
+			cards = [];
+		}
+		var points = json['points']
+		console.log(cards);
+		document.getElementById('points').innerHTML = '<input type="image" value="" class="button card" onclick="" src="static/back.png" style="opacity:0.0;"/>';
+		var i;
+		for (i = 0; i < cards.length; i++) {
+			document.getElementById('points').innerHTML += "<input type='image' value='' class='button card face_up_card' onclick='fromPoints(" + i + ")' src='" + cards[i] + "' style='left:" + (i * 25) + "px'/>\n";
+		}
+		document.getElementById('num-points').innerHTML = '<button onclick="getPoints()">Get points</button>' + points;
+	});
+
+	function shuffleDeck() {
+		console.log('Shuffling deck...');
+		socket.emit('shuffle');
+	}
+
+	function intoHand() {
+		console.log('Into hand...');
+		socket.emit('into_hand');
+	}
+
+	function backIntoHand(i) {
+		console.log('Back into hand...');
+		socket.emit('back_into_hand', i);
+	}
+
+	function becomePlayer(p) {
+		console.log('Becoming player ' + String(p + 1) + '...');
+		socket.emit('set_player', p);
+	}
+
+	function selectCard(i) {
+		console.log('Selecting card...');
+		socket.emit('select_card', i);
+	}
+
+	function playCards() {
+		console.log('Playing cards...');
+		socket.emit('play_cards');
+	}
+
+	function fromField(i) {
+		console.log('From field...');
+		console.log(String(i));
+		socket.emit('from_field', i);
+	}
+
+	function fromPoints(i) {
+		console.log('From points...');
+		console.log(String(i));
+		socket.emit('from_points', i);
+	}
+
+	function trumpSuit(i) {
+		console.log('Setting trump suit...');
+		socket.emit('trump_suit', i);
+	}
+
+	function trumpRank(i) {
+		console.log('Setting trump rank...');
+		socket.emit('trump_rank', i);
+	}
+
+	function putBottom() {
+		console.log('Putting at bottom...');
+		socket.emit('put_bottom');
+	}
+
+	function intoHandFromBottom() {
+		console.log('Into hand from bottom...');
+		socket.emit('from_bottom');
+	}
+
+	function revealBottom() {
+		console.log('Reveal bottom...');
+		socket.emit('reveal_bottom');
+	}
+
+	function getPoints() {
+		console.log('Getting points...');
+		socket.emit('get_points');
+	}
+
+	function noTrump() {
+		console.log('No trump save...');
+		socket.emit('no_trump_save');
+	}
+
+	function saveFinalState() {
+		console.log('Save 2...');
+		textbox = document.getElementById('custom_save_value');
+		socket.emit('save_final_state', textbox.value);
+	}
+
+	function resetSave() {
+		console.log('Reset save...');
+		socket.emit('reset_save');
+	}
+	</script>
+	{% endblock %}
+{% endblock %}
+
+</html>

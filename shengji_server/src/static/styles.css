@@ -1,0 +1,70 @@
+.card {
+	width:100px;
+	height:150px;
+}
+
+.face_up_card {
+	position: absolute;
+}
+
+#hand {
+	position: relative;
+ 	height: 160px;
+}
+
+.field {
+	position: relative;
+	height: 500px;
+}
+
+#player-top {
+	position: absolute;
+	left: 200px;
+}
+
+#player-left {
+	position: absolute;
+	top: 160px;
+	left: 50px;
+}
+
+#player-bottom {
+	position: absolute;
+	top: 320px;
+	left: 200px;
+}
+
+#player-right {
+	position: absolute;
+	top: 160px;
+	left: 350px;
+}
+
+#played-top {
+	position: absolute;
+	left: 180px;
+}
+
+#played-left {
+	position: absolute;
+	top: 160px;
+	left: 30px;
+}
+
+#played-bottom {
+	position: absolute;
+	top: 320px;
+	left: 180px;
+}
+
+#played-right {
+	position: absolute;
+	top: 160px;
+	left: 330px;
+}
+
+#reveal-bottom {
+	position: absolute;
+	top: 160px;
+	left: 200px;
+}
