@@ -1,7 +1,7 @@
 from flask import Flask, render_template, session
 from flask_bootstrap import Bootstrap
 from flask_socketio import SocketIO, emit
-import shengji_server.src.deck as d
+import shengji_server.deck as d
 
 app = Flask(__name__)
 Bootstrap(app)

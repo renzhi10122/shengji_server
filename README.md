@@ -5,7 +5,7 @@ Flask app to facilitate playing shengji over network
 First make sure to have poetry installed then
 ```
 poetry install
-export FLASK_APP=shengji_server/src/app.py
+export FLASK_APP=shengji_server/app.py
 poetry run flask run
 ```
 
