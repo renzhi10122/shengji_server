@@ -6,7 +6,7 @@ First make sure to have poetry installed then
 ```
 poetry install
 export FLASK_APP=shengji_server/app.py
-poetry run flask run
+poetry run flask run -h 0.0.0.0
 ```
 
 ## How I upload to the server

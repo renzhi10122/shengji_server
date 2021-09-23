@@ -10,8 +10,8 @@ class Card:
         self.rank = rank
         self.actual_suit = suit
         self.image_name = image_name
-        self.hand = -1 # -1 is deck, 0-3 is hand, 4-7 is respsective fields, 8 is bottom, 9 is point
-        self.selected = '0' # if selected, give number of pixels to raise by
+        self.hand = -1  # -1 is deck, 0-3 is hand, 4-7 is respective fields, 8 is bottom, 9 is point
+        self.selected = '0'  # if selected, give number of pixels to raise by
         self.previous = False
         self.current = False
         self.sorting_rank = self.assign_rank(0, 0)
@@ -19,18 +19,27 @@ class Card:
     def get_rank(self):
         return self.rank
     
-    def get_ordered_rank(self): #so this puts A as 14
+    def get_ordered_rank(self):  # so this puts A as 14
         if self.rank == 1:
             return 14
         return self.rank
     
     def get_suit(self):
         return self.suit
+
+    def get_colour(self, suit=None):
+        if suit is None:
+            suit = self.suit
+        if suit == 1 or suit == 2:
+            return "red"
+        else:
+            return "black"
     
     def get_actual_suit(self):
         return self.actual_suit
 
-    def assign_rank(self, trump_suit, trump_rank): # Card obj
+    def assign_rank(self, trump_suit, trump_rank):
+        # Card obj
         # Normal H cards get rank 2 to 14, A=14 skipping out trump rank
         # then trump cards get 16 to 28 skipping out trump rank
         # then normal trump rank gets 29, trump trump rank gets 30
@@ -44,16 +53,17 @@ class Card:
             if self.get_suit() == trump_suit:
                 return 10000
             return 7000 + self.get_ordered_rank() + self.get_suit() * 40
-        elif self.get_suit() == trump_suit:
+
+        if self.get_suit() == trump_suit:
             return self.get_ordered_rank() + 5000
-        elif self.get_suit() % 2 == trump_suit % 2:
+        elif self.get_colour() == self.get_colour(trump_suit):
             return self.get_ordered_rank() + 3500
         
         return self.get_ordered_rank() + self.get_suit() * 40 + ((self.get_suit() - trump_suit) % 2) * 1000
 
 
 class Deck:
-    def __init__(self, num_of_decks = 1, shuffle = True, jokers = True):
+    def __init__(self, num_of_decks=1, shuffle=True, jokers=True):
         self.cards = []
         
         for i in range(1, num_of_decks + 1):

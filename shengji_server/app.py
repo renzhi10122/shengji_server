@@ -22,18 +22,20 @@ init_stacks = {
     "current0": [True, "25", [], True],
     "current1": [True, "25", [], True],
     "current2": [True, "25", [], True],
-    "current3": [True, "25", [], True]
+    "current3": [True, "25", [], True],
 }
 game = d.Game(init_stacks)
 
 
 @app.route("/")
 def main():
-    return render_template("main.html",
-                           trump_suit=game.trump_suit,
-                           trump_rank=game.trump_rank,
-                           num_cards_left=len(game.stacks["deck"].cards),
-                           player=session.get("player", -1) + 1)
+    return render_template(
+        "main.html",
+        trump_suit=game.trump_suit,
+        trump_rank=game.trump_rank,
+        num_cards_left=len(game.stacks["deck"].cards),
+        player=session.get("player", -1) + 1
+    )
 
 
 @socketio.on("set_player")
@@ -61,24 +63,29 @@ def on_shuffle():
 
 def update_hand(i=-1):
     hand = game.stacks["hand" + session["player"]]
-    emit("update_hand",
-         {
-             "hand": hand.image_names_to_csv(),
-             "selected": hand.selected_to_csv(),
-             "highlight": i
-         })
+    emit(
+        "update_hand",
+        {
+            "hand": hand.image_names_to_csv(),
+            "selected": hand.selected_to_csv(),
+            "highlight": i,
+        }
+    )
 
 
 def update_field(changed_player, new="true"):
     played = game.stacks["field" + changed_player]
     current = game.stacks["current" + changed_player]
-    emit("update_field",
-         {
-             "changed_player": changed_player,
-             "played": current.image_names_to_csv(),
-             "past": played.cards[-1].image_name if played.cards else "",
-             "new": new
-         }, broadcast=True)
+    emit(
+        "update_field",
+        {
+            "changed_player": changed_player,
+            "played": current.image_names_to_csv(),
+            "past": played.cards[-1].image_name if played.cards else "",
+            "new": new,
+        },
+        broadcast=True,
+    )
 
 
 def check_session_player(func):
@@ -129,7 +136,6 @@ def on_back_into_hand(i):
     if "player" not in session:
         emit("warning_player_selection")
     else:
-        played = game.stacks["field" + session["player"]]
         current = game.stacks["current" + session["player"]]
         card = current.take_card(i)
         game.stacks["hand" + session["player"]].append(card)
@@ -187,7 +193,6 @@ def on_from_field(player):
 
 @socketio.on("from_points")
 def on_from_points(i):
-    print("take")
     if "player" not in session:
         emit("warning_player_selection")
     else:
