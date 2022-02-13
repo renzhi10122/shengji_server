@@ -90,10 +90,7 @@
 				<span id="num_cards_hand">0</span>
 			</div>
 			<div class="col-lg-5">
-				<button onclick="noTrump()">N</button>
-				<button onclick="saveFinalState()">Save</button>
-				<input type="text" id="custom_save_value">
-				<button onclick="resetSave()">Reset</button>
+				<button onclick="selectAll()">Select all</button>
 			</div>
 		</div>
 		<div class="row" id="hand">
@@ -312,20 +309,9 @@
 		socket.emit('get_points');
 	}
 
-	function noTrump() {
+	function selectAll() {
 		console.log('No trump save...');
-		socket.emit('no_trump_save');
-	}
-
-	function saveFinalState() {
-		console.log('Save 2...');
-		textbox = document.getElementById('custom_save_value');
-		socket.emit('save_final_state', textbox.value);
-	}
-
-	function resetSave() {
-		console.log('Reset save...');
-		socket.emit('reset_save');
+		socket.emit('select_all');
 	}
 	</script>
 	{% endblock %}

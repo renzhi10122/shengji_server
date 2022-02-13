@@ -156,6 +156,22 @@ def on_select_card(i):
         update_hand()
 
 
+@socketio.on("select_all")
+def on_select_all():
+    if "player" not in session:
+        emit("warning_player_selection")
+    else:
+        all_selected = True
+        for card in game.stacks["hand" + session["player"]].cards:
+            if card.selected == "0":
+                all_selected = False
+                break
+        pixel_offset = "0" if all_selected else "20"
+        for card in game.stacks["hand" + session["player"]].cards:
+            card.selected = pixel_offset
+        update_hand()
+
+
 @socketio.on("play_cards")
 def on_play_cards():
     if "player" not in session:
